@@ -1,30 +1,214 @@
 ---
 title: "Pitch Please"
 author: "Jeroen Timmerman"
-date: "18/2/2021"
-output: html_document
+date: "February 21, 2021"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+remotes::install_github('jaburgoyne/compmus')
+library(tidyverse)
+library(purrr)
+library(spotifyr)
+library(compmus)
+library(plotly)
+library(ggpubr)
 ```
 
-## R Markdown
+Introduction
+=========================================================
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Column
+----------------------------------------------------------
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### A slightly outdated introduction which I'll change later and will make prettier
 
-```{r cars}
-summary(cars)
+The topic I want to investigate is the (quantitative) difference between music by musicians with perfect pitch vs relative pitch. In a lot of musical scenes, perfect pitch (or absolute pitch) is adored like it is some kind of godsend. On one hand, perfect pitch only means you can identify pitches quickly, which would not necessarily make you a better musician. On the other hand, using it as a tool to learn music theory faster and easily identifying pitches when playing in some kind of ensemble could really make someone a better (subjectively, of course) musician. Listening to music is not the same as playing music and identifying music is not the same either.
+
+It’s not hard to identify that my natural comparison groups would consist of artists (PP artists vs RP artists). However, I’m not quite sure yet as to how I want to sample these artists. Just choosing some PP artists and some RP artists would easily fall to biases, so I should definitely think a lot about how I want to sample the artists. Keeping differences that are due to genre out of the comparison will definitely be one of the biggest challenges for researching this corpus. I think the most interesting artist to research in this corpus is Jacob Collier, since he seems to have one of the most brilliant and specific absolute pitches known to humankind, and he has made some astoundingly complex music, in which absolute pitch definitely seems to have had an impact in the way he has challenged conventional music theory rules. Examples of crazy Jacob Collier songs would be Everlasting Motion (feat. Hamid El Kasri), With The Love In My Heart, etc. I will use his music for analyses of specific songs.
+
+Portfolio {.storyboard}
+==========================================================
+### The structure of Hideaway by Jacob Collier (tonal and timbral self-similarity matrices)
+
+```{r echo = FALSE}
+hideaway <-
+  get_tidy_audio_analysis("00BTDWR6xCaGdst6cPKkpF") %>% # Change URI.
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+hide <- 
+  hideaway %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic()
+
+par(mfrow=c(1,2))
+
+timbre <-
+  hideaway %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(title = "Timbre", x = "", y = "")
+
+chroma <-
+  hideaway %>%
+  compmus_self_similarity(pitches, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(title = "Pitch", x = "", y = "")
+
+ggarrange(chroma, timbre,
+          ncol = 2, nrow = 1)
 ```
 
-## Including Plots
+***
 
-You can also embed plots, for example:
+In the pitch graph, you can see very clear boxes, especially around the 200-300 mark. These indicate certain sections. You can also see some diagonal lines, which indicate repetition. In the timbre graph however, you do not see these diagonal lines, apart from the  one through the middle that indicates that we're graphing the same song against itself. This means that there seems to be no or very little repetition within timbre. Hideaway seems to be a bit of a journey, that explores all sorts of sounds, but the melody lines of the song stay very "grounded". They seem to come back "home". I will change this text later, but I have had a hard time catching up in the last few weeks due to a rough schedule. Please don't be too hard on me in your peer reviews :( 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+
+### Jacob Collier's vs Lionel Richie's version of 'All Night Long'
+
+```{r echo = FALSE}
+## Lionel Richie
+Lionel <-
+  get_tidy_audio_analysis("4czNORk5MjW5WOn98bki32") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+## Jacob Collier
+Jacob <-
+  get_tidy_audio_analysis("6TN4FrJvMdYrLDF2Lz7ArI") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+compmus_long_distance(
+  Jacob %>% mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  Lionel %>% mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  feature = pitches,
+  method = "euclidean"
+) %>%
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_equal() +
+  labs(title = "Pitch Differences", x = "Jacob Collier (AP)", y = "Lionel Richie (RP)") +
+  theme_minimal() +
+  scale_fill_viridis_c(guide = NULL)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+***
+
+I'm not entirely sure what to say about this. Usually when a certain song is performed by two artists you'd expect to see a bit of a diagonal line, where both melodies are the same. Instead, there seem to be certain blocks, or thicker lines, really, which indicate some homogeneity between x and y. I will come back to this.
+
+
+
+
+### First let's compare a classical piece written by an artist with AP vs RP
+
+```{r echo = FALSE}
+mozart <- get_playlist_audio_features("","37i9dQZF1DX16wERbfwQvR")
+haydn <- get_playlist_audio_features("","37i9dQZF1DX8qqIDAkKiQg")
+
+
+
+mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo)) +
+  geom_point() +
+  labs(x = "Valence",
+       y = "Energy",
+       title = "Wolfgang Amadeus Mozart, AP",
+       caption = "Data source: Spotify API",
+       color = "Mode",
+       size = "Beats per Minute") +
+  scale_color_manual(labels = c("Minor", "Major"),values = c("#7cadc2", "#b700ff"))
+
+haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo)) +
+  geom_point() +
+  labs(x = "Valence",
+       y = "Energy",
+       title = "Franz Joseph Haydn, RP",
+       caption = "Data source: Spotify API",
+       color = "Mode",
+       size = "Beats per Minute") +
+  scale_color_manual(labels = c("Minor", "Major"),values = c("#7cadc2", "#b700ff"))
+
+ggarrange(mozart_plot, haydn_plot,
+          ncol = 2, nrow = 1, widths = c(2, 2))
+```
+
+***
+
+A comparison of the playlists "This is Mozart" and "This is Haydn". Mozart had absolute pitch, while Haydn did not. I haven't been able to fix the sizing unfortunately.
+
+
+Conclusions
+===============================================================
+
+### Something about stuff
+
+About the author
+===============================================================
+
+### Something gimmicky about me or something
