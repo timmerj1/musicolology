@@ -168,13 +168,13 @@ I'm not entirely sure what to say about this. Usually when a certain song is per
 
 ### First let's compare a classical piece written by an artist with AP vs RP
 
-```{r echo = FALSE}
+```{r echo = FALSE, fig.width = 20, fig.height = 8}
 mozart <- get_playlist_audio_features("","37i9dQZF1DX16wERbfwQvR")
 haydn <- get_playlist_audio_features("","37i9dQZF1DX8qqIDAkKiQg")
 
 
 
-mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo)) +
+mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo, alpha = .7)) +
   geom_point() +
   labs(x = "Valence",
        y = "Energy",
@@ -182,9 +182,12 @@ mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size
        caption = "Data source: Spotify API",
        color = "Mode",
        size = "Beats per Minute") +
-  scale_color_manual(labels = c("Minor", "Major"),values = c("#7cadc2", "#b700ff"))
+  scale_color_manual(labels = c("Minor", "Major"),values = c("#7cadc2", "#b700ff")) +
+  guides(shape = guide_legend(order = 2),col = guide_legend(order = 1)) +
+  xlim(0,1) +
+  ylim(0,1)
 
-haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo)) +
+haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo, alpha = .7)) +
   geom_point() +
   labs(x = "Valence",
        y = "Energy",
@@ -192,15 +195,18 @@ haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size =
        caption = "Data source: Spotify API",
        color = "Mode",
        size = "Beats per Minute") +
-  scale_color_manual(labels = c("Minor", "Major"),values = c("#7cadc2", "#b700ff"))
+  scale_color_manual(labels = c("Minor", "Major"),values = c("#7cadc2", "#b700ff")) +
+  guides(shape = guide_legend(order = 2),col = guide_legend(order = 1)) +
+  xlim(0,1) +
+  ylim(0,1)
 
 ggarrange(mozart_plot, haydn_plot,
-          ncol = 2, nrow = 1, widths = c(2, 2))
+          ncol = 2, nrow = 1)
 ```
 
 ***
 
-A comparison of the playlists "This is Mozart" and "This is Haydn". Mozart had absolute pitch, while Haydn did not. I haven't been able to fix the sizing unfortunately.
+A comparison of the playlists "This is Mozart" and "This is Haydn". Mozart had absolute pitch, while Haydn did not. Something something.
 
 
 Conclusions
