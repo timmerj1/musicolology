@@ -280,9 +280,13 @@ haydn <- get_playlist_audio_features("","37i9dQZF1DX8qqIDAkKiQg")
 
 
 
-mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo), alpha = .7) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE, aes(valence, energy), show.legend = FALSE) +
+mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo)) +
+  geom_point(alpha = .6) +
+  geom_smooth(method = "lm",
+              formula = y ~ poly(x, 3),
+              se = FALSE, aes(valence, energy),
+              show.legend = FALSE,
+              alpha = 1) +
   labs(x = "Valence",
        y = "Energy",
        title = "Wolfgang Amadeus Mozart, PP",
@@ -295,9 +299,13 @@ mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size
   ylim(0,1) +
   coord_fixed()
 
-haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo), alpha = .7) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE, aes(valence, energy), show.legend = FALSE) +
+haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo)) +
+  geom_point(alpha = .6) +
+  geom_smooth(method = "lm",
+              formula = y ~ poly(x, 3),
+              se = FALSE, aes(valence, energy),
+              show.legend = FALSE,
+              alpha = 1) +
   labs(x = "Valence",
        y = "Energy",
        title = "Franz Joseph Haydn, RP",
