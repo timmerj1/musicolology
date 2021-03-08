@@ -4,19 +4,20 @@ author: "Jeroen Timmerman"
 date: "February 21, 2021"
 output:
   flexdashboard::flex_dashboard:
+    theme: sandstone
     orientation: columns
     vertical_layout: fill
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-remotes::install_github('jaburgoyne/compmus')
 library(tidyverse)
 library(purrr)
 library(spotifyr)
 library(compmus)
 library(plotly)
 library(ggpubr)
+library(knitr)
 ```
 
 Introduction
@@ -33,6 +34,159 @@ It’s not hard to identify that my natural comparison groups would consist of a
 
 Portfolio {.storyboard}
 ==========================================================
+
+### LA Girls - Charlie Puth chordogram
+
+```{r echo = FALSE}
+circshift <- function(v, n) {
+  if (n == 0) v else c(tail(v, n), head(v, -n))
+}
+
+#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
+major_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+maj7_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    1)
+min7_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    1,    0)
+
+major_key <-
+  c(5, 2, 3.5, 2, 4.5, 4, 2, 4.5, 2, 3.5, 1.5, 4)
+minor_key <-
+  c(5, 2, 3.5, 4.5, 2, 4, 2, 4.5, 3.5, 2, 1.5, 4)
+
+chord_templates <-
+  tribble(
+    ~name, ~template,
+    "A:min", circshift(minor_chord, 9),
+    "A:min7", circshift(min7_chord, 9),
+    "C:7", circshift(seventh_chord, 0),
+    "C:maj", circshift(major_chord, 0),
+    "C:maj7", circshift(maj7_chord, 0),
+    "E:min", circshift(minor_chord, 4),
+    "E:min7", circshift(min7_chord, 4),
+    "G:7", circshift(seventh_chord, 7),
+    "G:maj", circshift(major_chord, 7),
+    "G:maj7", circshift(maj7_chord, 7),
+    "B:min", circshift(minor_chord, 11),
+    "B:min7", circshift(min7_chord, 11),
+    "D:7", circshift(seventh_chord, 2),
+    "D:maj", circshift(major_chord, 2),
+    "D:maj7", circshift(maj7_chord, 2),
+    "F#:min", circshift(minor_chord, 6),
+    "F#:min7", circshift(min7_chord, 6),
+    "A:7", circshift(seventh_chord, 9),
+    "A:maj", circshift(major_chord, 9),
+    "A:maj7", circshift(maj7_chord, 9),
+    "C#:min", circshift(minor_chord, 1),
+    "C#:min7", circshift(min7_chord, 1),
+    "E:7", circshift(seventh_chord, 4),
+    "E:maj", circshift(major_chord, 4),
+    "E:maj7", circshift(maj7_chord, 4),
+    "G#:min", circshift(minor_chord, 8),
+    "G#:min7", circshift(min7_chord, 8),
+    "B:7", circshift(seventh_chord, 11),
+    "B:maj", circshift(major_chord, 11),
+    "B:maj7", circshift(maj7_chord, 11),
+    "Eb:min", circshift(minor_chord, 3),
+    "Eb:min7", circshift(min7_chord, 3),
+    "Gb:7", circshift(seventh_chord, 6),
+    "Gb:maj", circshift(major_chord, 6),
+    "Gb:maj7", circshift(maj7_chord, 6),
+    "Bb:min", circshift(minor_chord, 10),
+    "Bb:min7", circshift(min7_chord, 10),
+    "Db:7", circshift(seventh_chord, 1),
+    "Db:maj", circshift(major_chord, 1),
+    "Db:maj7", circshift(maj7_chord, 1),
+    "F:min", circshift(minor_chord, 5),
+    "F:min7", circshift(min7_chord, 5),
+    "Ab:7", circshift(seventh_chord, 8),
+    "Ab:maj", circshift(major_chord, 8),
+    "Ab:maj7", circshift(maj7_chord, 8),
+    "C:min", circshift(minor_chord, 0),
+    "C:min7", circshift(min7_chord, 0),
+    "Eb:7", circshift(seventh_chord, 3),
+    "Eb:maj", circshift(major_chord, 3),
+    "Eb:maj7", circshift(maj7_chord, 3),
+    "G:min", circshift(minor_chord, 7),
+    "G:min7", circshift(min7_chord, 7),
+    "Bb:7", circshift(seventh_chord, 10),
+    "Bb:maj", circshift(major_chord, 10),
+    "Bb:maj7", circshift(maj7_chord, 10),
+    "D:min", circshift(minor_chord, 2),
+    "D:min7", circshift(min7_chord, 2),
+    "F:7", circshift(seventh_chord, 5),
+    "F:maj", circshift(major_chord, 5),
+    "F:maj7", circshift(maj7_chord, 5)
+  )
+
+key_templates <-
+  tribble(
+    ~name, ~template,
+    "A:min", circshift(minor_key, 9),
+    "C:maj", circshift(major_key, 0),
+    "E:min", circshift(minor_key, 4),
+    "G:maj", circshift(major_key, 7),
+    "B:min", circshift(minor_key, 11),
+    "D:maj", circshift(major_key, 2),
+    "F#:min", circshift(minor_key, 6),
+    "A:maj", circshift(major_key, 9),
+    "C#:min", circshift(minor_key, 1),
+    "E:maj", circshift(major_key, 4),
+    "G#:min", circshift(minor_key, 8),
+    "B:maj", circshift(major_key, 11),
+    "Eb:min", circshift(minor_key, 3),
+    "Gb:maj", circshift(major_key, 6),
+    "Bb:min", circshift(minor_key, 10),
+    "Db:maj", circshift(major_key, 1),
+    "F:min", circshift(minor_key, 5),
+    "Ab:maj", circshift(major_key, 8),
+    "C:min", circshift(minor_key, 0),
+    "Eb:maj", circshift(major_key, 3),
+    "G:min", circshift(minor_key, 7),
+    "Bb:maj", circshift(major_key, 10),
+    "D:min", circshift(minor_key, 2),
+    "F:maj", circshift(major_key, 5)
+  )
+
+LA_girls <-
+  get_tidy_audio_analysis("6pQadiopoIsS4x78tjSkJt") %>%
+  compmus_align(beats, segments) %>%
+  select(beats) %>%
+  unnest(beats) %>%
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
+
+LA_girls %>% 
+  compmus_match_pitch_template(
+    chord_templates,         # Change to chord_templates if desired
+    method = "euclidean",  # Try different distance metrics
+    norm = "manhattan"     # Try different norms
+  ) %>%
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "")
+
+```
+
+***
+
+I haven't been able to do much yet, but at least here is a chord-o-gram of a song by Charlie Puth who has PP.
+
+
 ### The structure of Hideaway by Jacob Collier (tonal and timbral self-similarity matrices)
 
 ```{r echo = FALSE}
@@ -119,54 +273,7 @@ ggarrange(chroma, timbre,
 In the pitch graph, you can see very clear boxes, especially around the 200-300 mark. These indicate certain sections. You can also see some diagonal lines, which indicate repetition. In the timbre graph however, you do not see these diagonal lines, apart from the  one through the middle that indicates that we're graphing the same song against itself. This means that there seems to be no or very little repetition within timbre. Hideaway seems to be a bit of a journey, that explores all sorts of sounds, but the melody lines of the song stay very "grounded". They seem to come back "home". I will change this text later, but I have had a hard time catching up in the last few weeks due to a rough schedule. Please don't be too hard on me in your peer reviews :( 
 
 
-### Jacob Collier's vs Lionel Richie's version of 'All Night Long'
-
-```{r echo = FALSE}
-## Lionel Richie
-Lionel <-
-  get_tidy_audio_analysis("4czNORk5MjW5WOn98bki32") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-## Jacob Collier
-Jacob <-
-  get_tidy_audio_analysis("6TN4FrJvMdYrLDF2Lz7ArI") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-compmus_long_distance(
-  Jacob %>% mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
-  Lionel %>% mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
-  feature = pitches,
-  method = "euclidean"
-) %>%
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_equal() +
-  labs(title = "Pitch Differences", x = "Jacob Collier (AP)", y = "Lionel Richie (RP)") +
-  theme_minimal() +
-  scale_fill_viridis_c(guide = NULL)
-
-```
-
-***
-
-I'm not entirely sure what to say about this. Usually when a certain song is performed by two artists you'd expect to see a bit of a diagonal line, where both melodies are the same. Instead, there seem to be certain blocks, or thicker lines, really, which indicate some homogeneity between x and y. I will come back to this.
-
-
-
-
-### First let's compare a classical piece written by an artist with AP vs RP
+### First let's compare a classical piece written by an artist with AP vs RP 
 
 ```{r echo = FALSE, fig.width = 20, fig.height = 8}
 mozart <- get_playlist_audio_features("","37i9dQZF1DX16wERbfwQvR")
@@ -174,8 +281,9 @@ haydn <- get_playlist_audio_features("","37i9dQZF1DX8qqIDAkKiQg")
 
 
 
-mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo, alpha = .7)) +
+mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size = tempo), alpha = .7) +
   geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE, aes(valence, energy), show.legend = FALSE) +
   labs(x = "Valence",
        y = "Energy",
        title = "Wolfgang Amadeus Mozart, AP",
@@ -187,8 +295,9 @@ mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size
   xlim(0,1) +
   ylim(0,1)
 
-haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo, alpha = .7)) +
+haydn_plot <- ggplot(haydn, aes(valence, energy, color = as.factor(mode), size = tempo), alpha = .7) +
   geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE, aes(valence, energy), show.legend = FALSE) +
   labs(x = "Valence",
        y = "Energy",
        title = "Franz Joseph Haydn, RP",
@@ -206,15 +315,64 @@ ggarrange(mozart_plot, haydn_plot,
 
 ***
 
-A comparison of the playlists "This is Mozart" and "This is Haydn". Mozart had absolute pitch, while Haydn did not. Something something.
-
+A comparison of the playlists "This is Mozart" and "This is Haydn". Mozart had absolute pitch, while Haydn did not. As you might be able to see, Haydn's pieces have a wider range of valence for both his minor and major pieces than Mozart, especially in the high valence (positive mood) range. The compositions of both artists have a low level of energy, which is consistent with their style, but interpretations of the pieces by the orchestras performing the pieces could also have an effect. Mozart's pieces also seem to have a wider distribution of energy in his pieces in major.
 
 Conclusions
 ===============================================================
 
-### Something about stuff
+### I haven't concluded anything
 
 About the author
 ===============================================================
 
-### Something gimmicky about me or something
+Column {.tabset}
+----------------------------------------------------------------
+
+### Image of me
+
+![An image of me](VSPAMe.jpg)
+
+### Favorite Tracks
+
+```{r echo = FALSE}
+get_my_top_artists_or_tracks(type = 'tracks', time_range = 'long_term', limit = 10) %>% 
+    mutate(artist.name = map_chr(artists, function(x) x$name[1])) %>% 
+    select(name, artist.name, album.name) %>% 
+    kable()
+```
+
+### Top Artists
+
+```{r echo = FALSE}
+get_my_top_artists_or_tracks(type = 'artists', time_range = 'long_term', limit = 10) %>% 
+    select(name, genres) %>% 
+    rowwise %>% 
+    mutate(genres = paste(genres, collapse = ', ')) %>% 
+    ungroup %>% 
+    kable()
+```
+
+
+
+Column
+-----------------------------------------------------------
+
+### About me
+
+I'll add text later. This is randomly generated post-modernism. “Class is fundamentally responsible for hierarchy,” says Sartre; however, according to Werther[1] , it is not so much class that is fundamentally responsible for hierarchy, but rather the absurdity of class. The main theme of Reicher’s[2] critique of the semiotic paradigm of discourse is the role of the observer as reader.
+
+The primary theme of the works of Pynchon is not, in fact, narrative, but prenarrative. However, Sontag’s essay on Lyotardist narrative implies that academe is capable of significance. Cameron[3] suggests that we have to choose between Lacanist obscurity and patriarchialist neodialectic theory.
+
+In the works of Pynchon, a predominant concept is the concept of textual consciousness. It could be said that Lacan uses the term ‘subsemantic discourse’ to denote the stasis, and eventually the defining characteristic, of capitalist language. Bataille promotes the use of predialectic desublimation to read sexual identity.
+
+
+
+
+
+
+
+
+
+
+
+
