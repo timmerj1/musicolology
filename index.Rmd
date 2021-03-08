@@ -169,8 +169,8 @@ LA_girls <-
 LA_girls %>% 
   compmus_match_pitch_template(
     chord_templates,         # Change to chord_templates if desired
-    method = "euclidean",  # Try different distance metrics
-    norm = "manhattan"     # Try different norms
+    method = "cosine",  # Try different distance metrics
+    norm = "euclidean"     # Try different norms
   ) %>%
   ggplot(
     aes(x = start + duration / 2, width = duration, y = name, fill = d)
@@ -270,10 +270,10 @@ ggarrange(chroma, timbre,
 
 ***
 
-In the pitch graph, you can see very clear boxes, especially around the 200-300 mark. These indicate certain sections. You can also see some diagonal lines, which indicate repetition. In the timbre graph however, you do not see these diagonal lines, apart from the  one through the middle that indicates that we're graphing the same song against itself. This means that there seems to be no or very little repetition within timbre. Hideaway seems to be a bit of a journey, that explores all sorts of sounds, but the melody lines of the song stay very "grounded". They seem to come back "home". I will change this text later, but I have had a hard time catching up in the last few weeks due to a rough schedule. Please don't be too hard on me in your peer reviews :( 
+In the pitch graph, you can see very clear boxes, especially around the 200-300 mark. These indicate novelty. The 200-300 mark is the bridge, which is why it is the clearest box (since bridges are, generally, melodically very different from the verse and chorus). You can also see some diagonal lines around the 75-200 mark, which indicate repetition. In the timbre graph however, you do not see these diagonal lines, apart from the  one through the middle that indicates that we're graphing the same song against itself. This means that there seems to be no or very little repetition within timbre. However, since the whole timbre matrix is almost completely blue, this indicates that there is very little timbral change.
 
 
-### First let's compare a classical piece written by an artist with AP vs RP 
+### First let's compare a classical piece written by an artist with PP vs RP 
 
 ```{r echo = FALSE, fig.width = 20, fig.height = 8}
 mozart <- get_playlist_audio_features("","37i9dQZF1DX16wERbfwQvR")
@@ -286,7 +286,7 @@ mozart_plot <- ggplot(mozart, aes(valence, energy, color = as.factor(mode), size
   geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE, aes(valence, energy), show.legend = FALSE) +
   labs(x = "Valence",
        y = "Energy",
-       title = "Wolfgang Amadeus Mozart, AP",
+       title = "Wolfgang Amadeus Mozart, PP",
        caption = "Data source: Spotify API",
        color = "Mode",
        size = "Beats per Minute") +
