@@ -1,7 +1,6 @@
 ---
 title: "Pitch Please"
 author: "Jeroen Timmerman"
-date: "February 21, 2021"
 output:
   flexdashboard::flex_dashboard:
     theme: sandstone
