@@ -25,14 +25,38 @@ Introduction
 Column
 ----------------------------------------------------------
 
-### A slightly outdated introduction which I'll change later and will make prettier
+### The World of Perfect Pitch
 
-The topic I want to investigate is the (quantitative) difference between music by musicians with perfect pitch vs relative pitch. In a lot of musical scenes, perfect pitch (or absolute pitch) is adored like it is some kind of godsend. On one hand, perfect pitch only means you can identify pitches quickly, which would not necessarily make you a better musician. On the other hand, using it as a tool to learn music theory faster and easily identifying pitches when playing in some kind of ensemble could really make someone a better (subjectively, of course) musician. Listening to music is not the same as playing music and identifying music is not the same either.
+The topic I want to investigate is the difference between music by musicians with perfect pitch (PP) vs relative pitch (RP). In a lot of musical scenes, perfect pitch (or absolute pitch) is adored like it is some kind of godsend. On one hand, perfect pitch only means you can identify pitches quickly, which would not necessarily make you a better musician. On the other hand, using it as a tool to learn music theory faster and easily identifying pitches when playing in some kind of ensemble could really make someone a better (subjectively, of course) musician. Listening to music is not the same as playing music and identifying music is not the same either. It is important to note that I use the word relative pitch here as any non-absolute pitch hearing, since everyone seems to have some kind of natural understanding of relative pitches (even the untrained ear can usually distinguish the octave from the minor second for example). This is not necessarily the general use of the term relative pitch, but it is a way for me not to have to distinguish between all identified types of non-perfect pitch hearing.
 
-It’s not hard to identify that my natural comparison groups would consist of artists (PP artists vs RP artists). However, I’m not quite sure yet as to how I want to sample these artists. Just choosing some PP artists and some RP artists would easily fall to biases, so I should definitely think a lot about how I want to sample the artists. Keeping differences that are due to genre out of the comparison will definitely be one of the biggest challenges for researching this corpus. I think the most interesting artist to research in this corpus is Jacob Collier, since he seems to have one of the most brilliant and specific absolute pitches known to humankind, and he has made some astoundingly complex music, in which absolute pitch definitely seems to have had an impact in the way he has challenged conventional music theory rules. Examples of crazy Jacob Collier songs would be Everlasting Motion (feat. Hamid El Kasri), With The Love In My Heart, etc. I will use his music for analyses of specific songs.
+It’s not hard to identify that my natural comparison groups consists of artists (PP artists vs RP artists). However, unbiased sampling of these artists is not a simple ordeal. Just choosing some random PP and RP artists would easily fall to biases, so I have put some thought and consideration into how I want to sample the artists. Keeping differences that are due to genre out of the comparison will definitely be one of the biggest challenges for researching this corpus. For this reason, I have decided to compare specific artists with PP to artists with RP who fall into the same genre of music at approximately the same time period and with a similar caliber. This will not be able to provide a thorough conclusion, but it will hopefully provide some information into the differences between muscians with PP and those without.
+
+I will also do some more in-depth analyses of particular songs or pieces. I think the most interesting artist to research in this corpus is Jacob Collier, since he seems to have one of the most brilliant and specific perfect pitches known to humankind, and he has made some astoundingly complex music, in which absolute pitch definitely seems to have had an impact in the way he has challenged conventional music theory rules. The problem with this however, is that his music can be so complex that especially the analyses based on pitch can be so complex that it will be very hard to capture with the algorithms made for western music with twelve tone equal temperament that I will be using. 
 
 Portfolio {.storyboard}
 ==========================================================
+
+### Novelty function of Everlasting Motion (Jacob Collier featuring Hamid El Kasri)
+
+```{r echo = FALSE}
+
+get_tidy_audio_analysis("5u8o2GmxD3i5wHYnth4Ux9") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  mutate(loudness_max_time = start + loudness_max_time) %>%
+  arrange(loudness_max_time) %>%
+  mutate(delta_loudness = loudness_max - lag(loudness_max)) %>%
+  ggplot(aes(x = loudness_max_time, y = pmax(0, delta_loudness))) +
+  geom_line() +
+  xlim(5, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+```
+
+***
+
+I have tried to make the tempogram work but so far my laptop has refused to do the amount of work that is necessary for a tempogram, which is why I have settled for a novelty function for now. I haven't spent much time on anything else, so the portfolio really hasn't improved very much. I will probably do most of the work on the weekend before the deadline of the portfolio after all of my exams.
 
 ### LA Girls - Charlie Puth chordogram
 
